@@ -472,9 +472,9 @@ render_game(const GameMemory* gameMemory)
     DrawRectangle(20, 50, STATUS_BAR_WIDTH, 20, GRAY);
     DrawRectangle(20, 50, (player->xp * STATUS_BAR_WIDTH) / player->xpMax, 20, YELLOW);
 
-    const Vector2 center = { SCREEN_WIDTH/2, 0 };
-    const char* timer = "10:00";
-    DrawText(timer, center.x - MeasureText(timer, FONT_SIZE)/2, center.y + TEXT_Y_OFFSET, FONT_SIZE, WHITE);
+    //const Vector2 center = { SCREEN_WIDTH/2, 0 };
+    //const char* timer = "10:00";
+    //DrawText(timer, center.x - MeasureText(timer, FONT_SIZE)/2, center.y + TEXT_Y_OFFSET, FONT_SIZE, WHITE);
 
     if (player->levelUp)
     {
