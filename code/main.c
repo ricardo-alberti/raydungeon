@@ -5,8 +5,16 @@
 
 #include "game.h"
 
+#include "helper.c"
 #include "arena.c"
 #include "level_up_menu.c"
+
+#include "animation.c"
+#include "player.c"
+#include "xp.c"
+#include "enemy.c"
+#include "bullet.c"
+#include "setup.c"
 #include "game.c"
 
 int

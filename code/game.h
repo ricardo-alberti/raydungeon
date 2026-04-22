@@ -1,4 +1,9 @@
-#define DEBUG 0
+// SIZES
+#define kB(value) (value * 1024)
+#define MB(value) (kB(value) * 1024)
+
+// ANIMATION
+#define ANIMATION_DELAY 0.2f
 
 // SPRITES
 #define FRAME_SIZE 16
@@ -11,27 +16,19 @@
 #define STATUS_BAR_WIDTH 300
 
 // ENEMIES
-#define MAX_ENEMIES 10000
+#define MAX_ENEMIES 100
 #define START_ENEMY_COUNT MAX_ENEMIES
 #define HORDE_SPAWN_DELAY 5.0f
 #define HORDE_ENEMY_NUMBER_INCREASE 10
 
 // XP
-#define MAX_XP 100000
+#define MAX_XP 100
 #define XP_SIZE 2.0f
 #define XP_SPEED 180.0f
 
 // BULLETS
-#define MAX_BULLETS 10000
+#define MAX_BULLETS 100
 #define RADIUS 30.0f
-
-// GRID
-#define GRID_CELLS_SIDE 8
-#define GRID_WIDTH 8
-
-// SIZES
-#define kB(value) (value * 1024)
-#define MB(value) (kB(value) * 1024)
 
 typedef struct {
     void* base;
@@ -86,12 +83,7 @@ typedef struct {
 } Experience;
 
 typedef struct {
-    float delay;
-    float elapsedTime;
-} AnimationSettings;
-
-typedef struct {
-    AnimationSettings animation;
+    float animationElapsedTime;
     Camera2D camera;
 
     Player* player;
