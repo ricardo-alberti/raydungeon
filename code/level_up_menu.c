@@ -5,7 +5,7 @@
 #define TEXT_Y_OFFSET 10
 
 void
-update_level_up_menu(GameContext* gameContext)
+update_level_up_menu(GameState* state)
 {
     const Vector2 center = { SCREEN_WIDTH/2 - BTN_WIDTH/2, SCREEN_HEIGHT/2 - BTN_HEIGHT*2};
 
@@ -39,17 +39,17 @@ update_level_up_menu(GameContext* gameContext)
     Vector2 pos = GetMousePosition();
     if (CheckCollisionPointRec(pos, option1))
     {
-        gameContext->player->maxHp += 100;
-        gameContext->player->hp = gameContext->player->maxHp;
+        state->player->maxHp += 100;
+        state->player->hp = state->player->maxHp;
     }
     else if (CheckCollisionPointRec(pos, option2))
     {
-        gameContext->player->damage += FONT_SIZE;
+        state->player->damage += FONT_SIZE;
     }
     else if (CheckCollisionPointRec(pos, option3))
     {
 
     }
 
-    gameContext->player->levelUp = false;
+    state->player->levelUp = false;
 }

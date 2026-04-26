@@ -1,86 +1,88 @@
+
 void
-update_game(GameMemory* gameMemory)
+update_game(GameMemory* memory)
 {
-    GameContext* gameContext = gameMemory->gameContext;
-    Player* player = gameContext->player;
+    GameState* state = memory->state;
+    Player* player = state->player;
     float deltaTime = GetFrameTime();
 
+    /*
     if (player->levelUp)
     {
         return;
     }
+    */
 
-    if (player->hp < 0)
+    if (player->hp <= 0)
     {
-        setup_game(gameMemory);
+        setup_game(memory);
     }
 
-    gameContext->camera.target = (Vector2) { player->position.x, player->position.y};
+    state->camera.target = (Vector2) { player->position.x, player->position.y };
 
-    update_bullets(gameContext, deltaTime);
-    update_player(gameContext->player, deltaTime);
-    update_xps(gameContext, deltaTime);
-    update_enemies(gameContext, deltaTime);
+    update_bullets(state, deltaTime);
+    update_player(player, deltaTime);
+    update_xps(player, &player->xp, state->xpPositions, &state->xpCount, deltaTime);
+    update_enemies(player, state->enemies, &state->enemyCount, state->targets, deltaTime);
+    update_horde(&state->enemyCount, &state->hordeSpawnElapsedTime, deltaTime);
 }
 
 void
-render_game(const GameMemory* gameMemory)
+render_game(const GameMemory* memory)
 {
-    GameContext* gameContext = gameMemory->gameContext;
-
-    if (gameContext->animationElapsedTime >= ANIMATION_DELAY)
+    GameState* state = memory->state;
+    if (state->animationElapsedTime >= ANIMATION_DELAY)
     {
-        gameContext->animationElapsedTime = 0.0f;
+        state->animationElapsedTime = 0.0f;
     }
 
-    gameContext->animationElapsedTime += GetFrameTime();
+    state->animationElapsedTime += GetFrameTime();
 
     BeginDrawing();
     ClearBackground(BLACK);
-    BeginMode2D(gameContext->camera);
+    BeginMode2D(state->camera);
 
     // bullets
-    for (int b = 0; b < gameContext->bulletCount; ++b)
+    for (int b = 0; b < state->bulletCount; ++b)
     {
-        int targetIndex = gameContext->targets[b];
+        int targetIndex = state->targets[b];
         if (targetIndex == -1)
         {
             continue;
         }
 
-        Bullet* bullet = &gameContext->bullets[b];
+        Bullet* bullet = &state->bullets[b];
         DrawRectangleRec(bullet->body, RED);
     }
 
     // player
-    Player *player = gameContext->player;
+    Player *player = state->player;
     const Vector2 playerTexturePos = { 
         player->position.x - player->body.width/2, 
         player->position.y - player->body.height/2 
     };
 
-    update_animation_frame(gameContext->animationElapsedTime, &(player->animationFrame.x));
-    DrawTextureRec(gameContext->playerTexture, player->animationFrame, playerTexturePos, player->color);       
+    update_animation_frame(state->animationElapsedTime, &(player->animationFrame.x));
+    DrawTextureRec(state->playerTexture, player->animationFrame, playerTexturePos, player->color);       
 
     // xps
-    for (int x = 0; x < gameContext->xpCount; ++x)
+    for (int x = 0; x < state->xpCount; ++x)
     {
-        Experience* xp = &gameContext->xp[x];
-        DrawRectangleRec(xp->body, YELLOW);
+        DrawRectangleRec(get_xp_body(&state->xpPositions[x]), YELLOW);
     }
 
     // enemy
-    for (int e = 0; e < gameContext->enemyCount; ++e)
+    for (int e = 0; e < state->enemyCount; ++e)
     {
-        Enemy* enemy = &gameContext->enemies[e];
-        update_animation_frame(gameContext->animationElapsedTime, &(enemy->animationFrame.x));
+        Enemy* enemy = &state->enemies[e];
+        update_animation_frame(state->animationElapsedTime, &(enemy->animationFrame.x));
 
         Vector2 enemyTexturePos = {
             enemy->position.x - enemy->body.width/2,
             enemy->position.y - enemy->body.height/2,
         };
 
-        DrawTextureRec(gameContext->enemyTexture, enemy->animationFrame, enemyTexturePos, WHITE);       
+        DrawTextureRec(state->enemyTexture, enemy->animationFrame, enemyTexturePos, WHITE);       
     }
 
     EndMode2D();
@@ -90,10 +92,12 @@ render_game(const GameMemory* gameMemory)
     DrawRectangle(20, 50, STATUS_BAR_WIDTH, 20, GRAY);
     DrawRectangle(20, 50, (player->xp * STATUS_BAR_WIDTH) / player->xpMax, 20, YELLOW);
 
+    /*
     if (player->levelUp)
     {
-        update_level_up_menu(gameContext);
+        update_level_up_menu(state);
     }
+    */
 
     DrawFPS(20, 80);
     EndDrawing();

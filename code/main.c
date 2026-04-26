@@ -8,11 +8,12 @@
 #include "helper.c"
 #include "arena.c"
 #include "level_up_menu.c"
-
 #include "animation.c"
+
 #include "player.c"
 #include "xp.c"
 #include "enemy.c"
+#include "horde.c"
 #include "bullet.c"
 #include "setup.c"
 #include "game.c"
@@ -21,6 +22,9 @@ int
 main(void) 
 { 
     GameMemory gameMemory = { 0 };
+
+    gameMemory.permanentStorage = arena_alloc(MB(1));
+    gameMemory.transientStorage = arena_alloc(MB(1));
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raydungeon");
     setup_game(&gameMemory);

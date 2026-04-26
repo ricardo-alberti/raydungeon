@@ -1,41 +1,43 @@
+static inline Rectangle
+get_xp_body(Vector2* xp_position)
+{
+    return (Rectangle){
+        xp_position->x - XP_SIZE/2,
+        xp_position->y - XP_SIZE/2,
+        XP_SIZE,
+        XP_SIZE
+    };
+}
 
 void
-update_xps(GameContext* gameContext, float deltaTime)
+update_xps(const Player* player, int* player_xp, Vector2* xp_positions, int* xp_count, float delta_time)
 {
-    Player* player = gameContext->player;
-
-    for (int x = 0; x < gameContext->xpCount; ++x)
+    for (int x = 0; x < *xp_count; ++x)
     {
-        Experience* xp = &gameContext->xp[x];
-
-        if (!CheckCollisionCircleRec(player->position, player->xpRadius, xp->body))
+        // if not in players range skip
+        Vector2* xp_position = &xp_positions[x];
+        Rectangle xp_body = get_xp_body(xp_position);
+        if (!CheckCollisionCircleRec(player->position, player->xpRadius, xp_body))
         {
             continue;
         }
 
-        float dx = player->position.x - xp->body.x;
-        float dy = player->position.y - xp->body.y;
+        // move to player's direction
+        float dx = player->position.x - xp_body.x;
+        float dy = player->position.y - xp_body.y;
         float len = sqrtf(dx*dx + dy*dy);
-
         if (len > 0.0f)
         {
-            xp->body.x += (dx / len) * XP_SPEED * deltaTime;
-            xp->body.y += (dy / len) * XP_SPEED * deltaTime;
+            xp_position->x += (dx / len) * XP_SPEED * delta_time;
+            xp_position->y += (dy / len) * XP_SPEED * delta_time;
         }
 
-        if (CheckCollisionRecs(xp->body, player->body))
+        // collidde with player
+        if (CheckCollisionRecs(xp_body, player->body))
         {
-            player->xp++;
-
-            gameContext->xp[x] = gameContext->xp[gameContext->xpCount - 1];
-            gameContext->xpCount--;
-
-            if (player->xp >= player->xpMax)
-            {
-                player->xpMax += player->xpMax;
-                player->xp = 0;
-                player->levelUp = true;
-            }
+            xp_positions[x] = xp_positions[(*xp_count) - 1];
+            (*xp_count)--;
+            (*player_xp)++;
         }
     }
 }

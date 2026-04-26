@@ -2,6 +2,7 @@
 void
 update_player(Player* player, float deltaTime)
 {
+    // key inputs
     if (IsKeyDown(KEY_W)) 
     {
         player->position.y -= player->speed * deltaTime;
@@ -28,9 +29,7 @@ update_player(Player* player, float deltaTime)
         }
     }
 
-    player->body.x = player->position.x - player->body.width/2;
-    player->body.y = player->position.y - player->body.height/2;
-
+    // invulnerability
     if (player->invulnerable) 
     {
         player->color = RED;
@@ -42,4 +41,16 @@ update_player(Player* player, float deltaTime)
             player->color = WHITE;
         }
     }
+
+    // level-up
+    if (player->xp >= player->xpMax)
+    {
+        player->xpMax += player->xpMax;
+        player->xp = 0;
+        player->levelUp = true;
+    }
+
+    // centralize
+    player->body.x = player->position.x - player->body.width/2;
+    player->body.y = player->position.y - player->body.height/2;
 }

@@ -1,42 +1,26 @@
 
 void
-setup_game(GameMemory* gameMemory)
+setup_game(GameMemory* memory)
 {
-    if (!gameMemory->IsInitialized)
-    {
-        gameMemory->IsInitialized = true;
-        gameMemory->permanentStorage = arena_alloc(MB(5));
-        gameMemory->transientStorage = arena_alloc(MB(5));
+    Arena* perm = &memory->permanentStorage;
+
+    if (!memory->IsInitialized) {
+        memory->state = (GameState*)arena_push(perm, sizeof(GameState));
+        GameState* state = memory->state;
+
+        state->player      = (Player*)     arena_push(perm, sizeof(Player));
+        state->enemies     = (Enemy*)      arena_push(perm, sizeof(Enemy) * MAX_ENEMIES);
+        state->bullets     = (Bullet*)     arena_push(perm, sizeof(Bullet) * MAX_BULLETS);
+        state->xpPositions = (Vector2*)    arena_push(perm, sizeof(Vector2) * MAX_XP);
+        state->targets     = (int*)        arena_push(perm, sizeof(int) * MAX_BULLETS);
+
+        memory->IsInitialized = true;
     }
 
-    arena_reset(&gameMemory->permanentStorage);
-    arena_reset(&gameMemory->transientStorage);
-
-    gameMemory->gameContext = arena_push(&gameMemory->permanentStorage, sizeof(GameContext), 16);
-    GameContext* gameContext = gameMemory->gameContext;
-    zero_memory(gameContext, sizeof(GameContext));
-
-    gameContext->player = arena_push(&gameMemory->permanentStorage, sizeof(Player), 16);
-    gameContext->enemies = arena_push(&gameMemory->permanentStorage, sizeof(Enemy) * MAX_ENEMIES, 16);
-    gameContext->position = arena_push(&gameMemory->permanentStorage, sizeof(Vector2) * MAX_ENEMIES, 16);
-    gameContext->bullets = arena_push(&gameMemory->permanentStorage, sizeof(Bullet) * MAX_BULLETS, 16);
-    gameContext->xp = arena_push(&gameMemory->permanentStorage, sizeof(Experience) * MAX_XP, 16);
-    gameContext->targets = arena_push(&gameMemory->permanentStorage, sizeof(int) * MAX_BULLETS, 16);
-
-    Image playerImage = LoadImage("data/assets/AdeptNecromancer/AdeptNecromancer.png");
-    gameContext->playerTexture = LoadTextureFromImage(playerImage);
-    UnloadImage(playerImage);
-
-    Image enemyImage = LoadImage("data/assets/CorruptedTreant/CorruptedTreant.png");
-    gameContext->enemyTexture = LoadTextureFromImage(enemyImage);
-    UnloadImage(enemyImage);
-
-    Image glowingWisp = LoadImage("data/assets/GlowingWisp/GlowingWisp.png");
-    gameContext->glowingWispTexture = LoadTextureFromImage(glowingWisp);
-    UnloadImage(glowingWisp);
+    GameState* state = memory->state;
 
     // setup player
-    Player* player = gameContext->player;
+    Player* player = state->player;
     player->body = (Rectangle){ 0, 0, FRAME_SIZE, FRAME_SIZE };
     player->color = WHITE;
     player->visionRadius = 120;
@@ -52,22 +36,25 @@ setup_game(GameMemory* gameMemory)
     player->animationFrame = (Rectangle){ 0, 0, FRAME_SIZE, FRAME_SIZE };
 
     // setup bullets
-    gameContext->bulletCount = MAX_BULLETS;
-    for (int i = 0; i < gameContext->bulletCount; ++i)
+    state->bulletCount = MAX_BULLETS;
+    for (int i = 0; i < state->bulletCount; ++i)
     {
-        load_bullet(gameContext, i);
+        load_bullet(state, i);
     }
 
     // setup enemies
-    gameContext->enemyCount = START_ENEMY_COUNT;
-    for (int i = 0; i < gameContext->enemyCount; ++i)
+    state->enemyCount = START_ENEMY_COUNT;
+    for (int i = 0; i < state->enemyCount; ++i)
     {
-        spawn_enemy(gameContext, i);
+        spawn_enemy(state, i);
     }
 
-    // setup camera
-    gameContext->camera = (Camera2D){ 0 };
-    gameContext->camera.offset = (Vector2){ SCREEN_WIDTH/2, SCREEN_HEIGHT/2 };
-    gameContext->camera.zoom = 3.0f;
-}
+    // camera
+    state->camera = (Camera2D){ 0 };
+    state->camera.offset = (Vector2){ SCREEN_WIDTH/2, SCREEN_HEIGHT/2 };
+    state->camera.zoom = 3.0f;
 
+    // assets
+    state->playerTexture = LoadTexture("data/assets/AdeptNecromancer/AdeptNecromancer.png");
+    state->enemyTexture = LoadTexture("data/assets/CorruptedTreant/CorruptedTreant.png");
+}

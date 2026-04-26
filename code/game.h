@@ -1,3 +1,5 @@
+#define DEBUG 1
+
 // SIZES
 #define kB(value) (value * 1024)
 #define MB(value) (kB(value) * 1024)
@@ -16,18 +18,18 @@
 #define STATUS_BAR_WIDTH 300
 
 // ENEMIES
-#define MAX_ENEMIES 100
+#define MAX_ENEMIES 10000
 #define START_ENEMY_COUNT MAX_ENEMIES
 #define HORDE_SPAWN_DELAY 5.0f
 #define HORDE_ENEMY_NUMBER_INCREASE 10
 
 // XP
-#define MAX_XP 100
+#define MAX_XP MAX_ENEMIES
 #define XP_SIZE 2.0f
 #define XP_SPEED 180.0f
 
 // BULLETS
-#define MAX_BULLETS 100
+#define MAX_BULLETS MAX_ENEMIES
 #define RADIUS 30.0f
 
 typedef struct {
@@ -37,7 +39,7 @@ typedef struct {
 } Arena;
 
 typedef struct {
-    // STATS
+    // stats
     float speed;
     int hp;
     int maxHp;
@@ -48,7 +50,7 @@ typedef struct {
     float xpRadius;
     float visionRadius;
 
-    // XP
+    // xp
     int xp;
     int xpMax;
 
@@ -77,38 +79,33 @@ typedef struct {
 } Enemy;
 
 typedef struct {
-    int type;
-    float speed;
-    Rectangle body;
-} Experience;
-
-typedef struct {
+    // timers
     float animationElapsedTime;
+    float hordeSpawnElapsedTime;
     Camera2D camera;
 
+    // textures
+    Texture2D playerTexture;
+    Texture2D enemyTexture;
+
+    // entities
     Player* player;
 
-    Experience* xp;
+    Vector2* xpPositions;
     int xpCount;
     int ringPointer;
 
     Enemy* enemies;
     int enemyCount;
-    float hordeSpawnElapsedTime;
 
-    Vector2* position;
     Bullet* bullets;
     int* targets;
     int bulletCount;
-
-    Texture2D playerTexture;
-    Texture2D enemyTexture;
-    Texture2D glowingWispTexture;
-} GameContext;
+} GameState;
 
 typedef struct {
     bool IsInitialized;
     Arena permanentStorage; 
     Arena transientStorage; 
-    GameContext* gameContext;
+    GameState* state;
 } GameMemory;

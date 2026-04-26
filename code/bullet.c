@@ -1,27 +1,29 @@
 void
-drop_xp(GameContext* gameContext, Vector2 position)
+drop_xp(GameState* state, Vector2 position)
 {
-    Experience* xp;
+    Vector2* xp;
 
-    if (gameContext->ringPointer >= MAX_XP || gameContext->ringPointer >= gameContext->xpCount)
-        gameContext->ringPointer = 0;
+    if (state->ringPointer >= MAX_XP || state->ringPointer >= state->xpCount)
+        state->ringPointer = 0;
 
-    if (gameContext->xpCount < MAX_XP)
-         xp = &gameContext->xp[gameContext->xpCount++];
+    if (state->xpCount < MAX_XP)
+    {
+         xp = &state->xpPositions[state->xpCount++];
+    }
     else 
-        xp = &gameContext->xp[gameContext->ringPointer++];
+    {
+        xp = &state->xpPositions[state->ringPointer++];
+    }
 
-    xp->body.width = XP_SIZE;
-    xp->body.height = XP_SIZE;
-    xp->body.x = position.x - xp->body.width / 2;
-    xp->body.y = position.y - xp->body.height / 2;
+    xp->x = position.x;
+    xp->y = position.y;
 }
 
 void
-load_bullet(GameContext* gameContext, int index) 
+load_bullet(GameState* state, int index) 
 {
-    const Player* player = gameContext->player;
-    Bullet* bullet = &gameContext->bullets[index];
+    const Player* player = state->player;
+    Bullet* bullet = &state->bullets[index];
     Rectangle* body = &bullet->body;
 
     bullet->type = 1;
@@ -33,20 +35,20 @@ load_bullet(GameContext* gameContext, int index)
     body->x = player->position.x - body->width / 2;
     body->y = player->position.y - body->height / 2;
                 
-    gameContext->targets[index] = -1;
+    state->targets[index] = -1;
 }
 
 void
-update_homing_missile(GameContext *gameContext, int b, float deltaTime)
+update_homing_missile(GameState *state, int b, float deltaTime)
 {
-    Bullet *bullet = &gameContext->bullets[b];
-    int targetIndex = gameContext->targets[b];
+    Bullet *bullet = &state->bullets[b];
+    int targetIndex = state->targets[b];
     if (targetIndex == -1) {
-        load_bullet(gameContext, b);
+        load_bullet(state, b);
         return;
     }
 
-    Enemy* target = &gameContext->enemies[targetIndex];
+    Enemy* target = &state->enemies[targetIndex];
     float dx = target->position.x - bullet->body.x;
     float dy = target->position.y - bullet->body.y;
     float len = sqrtf(dx*dx + dy*dy);
@@ -58,17 +60,17 @@ update_homing_missile(GameContext *gameContext, int b, float deltaTime)
 
     if (CheckCollisionRecs(target->body, bullet->body))
     {
-        load_bullet(gameContext, b);
-        drop_xp(gameContext, target->position);
-        spawn_enemy(gameContext, targetIndex);
+        load_bullet(state, b);
+        drop_xp(state, target->position);
+        spawn_enemy(state, targetIndex);
     }
 }
 
 void
-update_bullets(GameContext* gameContext, float deltaTime)
+update_bullets(GameState* state, float deltaTime)
 {
-    for (int b = 0; b < gameContext->bulletCount; ++b)
+    for (int b = 0; b < state->bulletCount; ++b)
     {
-        update_homing_missile(gameContext, b, deltaTime);
+        update_homing_missile(state, b, deltaTime);
     }
 }

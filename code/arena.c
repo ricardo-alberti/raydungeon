@@ -1,5 +1,7 @@
+#define ARENA_ALIGMENT 16
+
 void*
-arena_push(Arena* arena, size_t size, size_t alignment)
+arena_push(Arena* arena, size_t size)
 {
     if (!size) 
     {
@@ -8,7 +10,7 @@ arena_push(Arena* arena, size_t size, size_t alignment)
     }
 
     size_t current = (size_t)arena->base + arena->used;
-    size_t offset = (alignment - (current % alignment)) % alignment;
+    size_t offset = (ARENA_ALIGMENT - (current % ARENA_ALIGMENT)) % ARENA_ALIGMENT;
 
     if (arena->used + offset + size > arena->size)
     {

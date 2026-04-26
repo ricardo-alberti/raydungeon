@@ -1,18 +1,17 @@
 static void
-player_take_damage(Player* player, int damage)
+attack_player(Player* player, int damage)
 { 
-    if (player->invulnerable)
-        return;
+    if (player->invulnerable) return;
 
     player->hp -= damage;
     player->invulnerable = true;
 }
 
 static void
-spawn_enemy(GameContext* gameContext, int index)
+spawn_enemy(GameState* state, int index)
 {
-    Enemy *enemy = &gameContext->enemies[index];
-    enemy->type = 1;
+    Enemy *enemy = &state->enemies[index];
+    enemy->type = 1;  
     enemy->hp = 10;
     enemy->speed = 80.0f;
     enemy->damage = 10;
@@ -21,8 +20,8 @@ spawn_enemy(GameContext* gameContext, int index)
 
     int side = GetRandomValue(0, 3);
     Vector2 spawnPos = { 
-        (int)gameContext->player->position.x, 
-        (int)gameContext->player->position.y
+        (int)state->player->position.x, 
+        (int)state->player->position.y
     };
 
     if (side < 2)
@@ -41,29 +40,19 @@ spawn_enemy(GameContext* gameContext, int index)
 }
 
 void
-update_enemies(GameContext* gameContext, float deltaTime)
+update_enemies(Player* player,
+        Enemy* enemies,
+        int* enemyCount,
+        int* targets,
+        float deltaTime)
 {
-    const Player* player = gameContext->player;
-
-    gameContext->hordeSpawnElapsedTime += deltaTime;
-    if (gameContext->enemyCount < MAX_ENEMIES
-        && gameContext->hordeSpawnElapsedTime >= HORDE_SPAWN_DELAY)
+    for (int e = 0; e < *enemyCount; ++e)
     {
-        gameContext->enemyCount += HORDE_ENEMY_NUMBER_INCREASE;
-        gameContext->hordeSpawnElapsedTime = 0;
-
-        if (gameContext->enemyCount > MAX_ENEMIES)
-            gameContext->enemyCount = MAX_ENEMIES;
-    }
-
-    for (int e = 0; e < gameContext->enemyCount; ++e)
-    {
-        Enemy* enemy = &gameContext->enemies[e];
+        Enemy* enemy = &enemies[e];
 
         float dx = player->position.x - enemy->position.x;
         float dy = player->position.y - enemy->position.y;
         float len = sqrtf(dx*dx + dy*dy);
-
         if (len > 0.0f) {
             enemy->position.x += (dx / len) * enemy->speed * deltaTime;
             enemy->position.y += (dy / len) * enemy->speed * deltaTime;
@@ -74,24 +63,15 @@ update_enemies(GameContext* gameContext, float deltaTime)
 
         if (CheckCollisionRecs(enemy->body, player->body))
         {
-            player_take_damage(gameContext->player, enemy->damage);
+            attack_player(player, enemy->damage);
         }
 
         if (CheckCollisionCircleRec(player->position, player->visionRadius, enemy->body))
         {
-            for (int b = 0; b < gameContext->bulletCount; ++b)
+            if (targets[e] == -1) 
             {
-                if (enemy->targeted)
-                {
-                    break;
-                }
-
-                if (gameContext->targets[b] == -1) 
-                {
-                    gameContext->targets[b] = e;
-                    enemy->targeted = true;
-                    break;
-                }
+                targets[e] = e;
+                enemy->targeted = true;
             }
         }
 

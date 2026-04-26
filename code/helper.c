@@ -1,3 +1,4 @@
+
 void
 zero_memory(void* ptr, size_t size)
 {
